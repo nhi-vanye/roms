@@ -1,6 +1,6 @@
 
 /*
-	$Id: roms.c,v 1.1 1998/01/29 04:24:36 offer Exp $
+	$Id: roms.c,v 1.2 1998/01/29 04:39:30 offer Exp $
 
 	(c) Richard M. Offer
 
@@ -15,12 +15,14 @@
 #include <dirent.h>
 #include <time.h>
 
+#include <pwd.h> /* for password access */
 /* for SunOs */
 #ifndef RAND_MAX
 #define RAND_MAX (2147483647)
 #endif
 
 #define ADDRESSFILE ".addresses"
+#define NAMEFILE ".fullname"
 
 #define NewString(a) (a?strcpy((char *)malloc(strlen(a)+1),a):NULL)
 #define NewStringPlusExtra(a,b) (a?strcpy((char *)malloc(strlen(a)+b+1),a):NULL)
@@ -81,6 +83,7 @@ char	**argv;
 	int			err;
 	OrderType 	indexType = Random;
 	int 		lookup;
+	int			returnName = 0;
 
 /* for getopt() */
     extern char *optarg;
@@ -101,7 +104,7 @@ char	**argv;
 
 	opterr = 0; /* switch off getopt error reporting */
 
-	while ( (c=getopt(argc,argv,"d:rs")) != EOF ) { 
+	while ( (c=getopt(argc,argv,"d:rsn")) != EOF ) { 
 
 		switch (c) { 
 
@@ -115,6 +118,10 @@ char	**argv;
 
 			case 's':
 				indexType = Sequential;
+				break;
+				
+			case 'n':
+				returnName = 1;
 				break;
 
 		}
@@ -223,6 +230,28 @@ char	**argv;
         	sortOnDirectory);
 	
 
+
+	if ( returnName == 1 ) {
+		sprintf(addressDBname,
+			"%s/%s",
+			addressees[0].dbentry->dir,NAMEFILE);
+	
+		sig = fopen(addressDBname,"r");
+		if ( sig == NULL ) {
+			struct passwd *pw = getpwnam(getlogin());
+			
+			fprintf(stderr,"Using name from password file\n");
+			fprintf(stdout,"%s\n",pw->pw_name);
+			return 0;
+		}
+			
+		fgets(line,255,sig);
+		fputs(line,stdout);
+		fclose(sig);
+		
+		return 0;
+		
+	}
 
 	sigDir = opendir(addressees[0].dbentry->dir);
 
