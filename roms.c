@@ -1,6 +1,6 @@
 
 /*
-	$Id: roms.c,v 1.2 1998/01/29 04:39:30 offer Exp $
+	$Id: roms.c,v 1.3 1998/01/29 17:31:18 offer Exp $
 
 	(c) Richard M. Offer
 
@@ -240,13 +240,15 @@ char	**argv;
 		if ( sig == NULL ) {
 			struct passwd *pw = getpwnam(getlogin());
 			
-			fprintf(stderr,"Using name from password file\n");
+			fprintf(stderr,"Using name '%s' from password file\n",pw->pw_name);
 			fprintf(stdout,"%s\n",pw->pw_name);
 			return 0;
 		}
 			
 		fgets(line,255,sig);
 		fputs(line,stdout);
+		line[strlen(line) -1] = '\0';
+		fprintf(stderr,"Using name '%s'\n",line);
 		fclose(sig);
 		
 		return 0;
